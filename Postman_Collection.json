@@ -1,0 +1,329 @@
+{
+  "info": {
+    "_postman_id": "cng-finder-auth-collection",
+    "name": "CNG Finder - Authentication API",
+    "description": "Complete authentication API with signup, login, and password reset functionality",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "User Registration",
+      "item": [
+        {
+          "name": "Signup with Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"emailOrPhone\": \"john@example.com\",\n  \"password\": \"Pass123\",\n  \"confirmPassword\": \"Pass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signup"]
+            },
+            "description": "Register a new user account with email"
+          },
+          "response": []
+        },
+        {
+          "name": "Signup with Phone Only",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Smith\",\n  \"emailOrPhone\": \"9123456789\",\n  \"password\": \"JanePass123\",\n  \"confirmPassword\": \"JanePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signup"]
+            },
+            "description": "Register a new user account with phone number only"
+          },
+          "response": []
+        },
+        {
+          "name": "Signup - Validation Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test\",\n  \"email\": \"invalid-email\",\n  \"password\": \"weak\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signup"]
+            },
+            "description": "Test validation errors with invalid data"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Login",
+      "item": [
+        {
+          "name": "Login with Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('auth_token', jsonData.data.token);",
+                  "    console.log('Token saved to environment:', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"john@example.com\",\n  \"password\": \"Pass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login using email and password. Token will be auto-saved."
+          },
+          "response": []
+        },
+        {
+          "name": "Login with Phone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('auth_token', jsonData.data.token);",
+                  "    console.log('Token saved to environment:', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"9876543210\",\n  \"password\": \"Pass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login using phone number and password. Token will be auto-saved."
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Invalid Credentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"wrong@email.com\",\n  \"password\": \"WrongPass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Test login with invalid credentials"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Password Reset",
+      "item": [
+        {
+          "name": "Forgot Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.debug_resetToken) {",
+                  "        pm.environment.set('reset_token', jsonData.debug_resetToken);",
+                  "        console.log('Reset token saved:', jsonData.debug_resetToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"john@example.com\",\n  \"newPassword\": \"NewPass123\",\n  \"confirmPassword\": \"NewPass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "forgot-password"]
+            },
+            "description": "Request password reset and set new password directly"
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{reset_token}}\",\n  \"newPassword\": \"NewPass456\",\n  \"confirmPassword\": \"NewPass456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password"]
+            },
+            "description": "Reset password using the token received from forgot-password request"
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password - Invalid Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"999999\",\n  \"newPassword\": \"NewPass789\",\n  \"confirmPassword\": \"NewPass789\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password"]
+            },
+            "description": "Test reset password with invalid token"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "API Health Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the API server is running and healthy"
+          },
+          "response": []
+        },
+        {
+          "name": "Root Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Get API welcome message and info"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reset_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
