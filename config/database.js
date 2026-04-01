@@ -43,6 +43,15 @@ if (process.env.NODE_ENV === 'development') {
   console.log('DB User:', process.env.DB_USER);
 }
 
+// Validate database configuration
+if (!process.env.DATABASE_URL && !process.env.DB_HOST) {
+  console.error('❌ ERROR: No database configuration found!');
+  console.error('Please set either DATABASE_URL or DB_HOST environment variable');
+  console.error('Current environment variables:');
+  console.error('  DATABASE_URL:', process.env.DATABASE_URL ? '***SET***' : 'NOT SET');
+  console.error('  DB_HOST:', process.env.DB_HOST || 'NOT SET');
+}
+
 // Test database connection
 pool.on('connect', () => {
   console.log('Database connected successfully');

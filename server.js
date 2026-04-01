@@ -91,6 +91,15 @@ process.on('unhandledRejection', (reason, promise) => {
 // Start server
 const startServer = async () => {
   try {
+    // Validate environment variables before starting
+    if (!process.env.DATABASE_URL && !process.env.DB_HOST) {
+      throw new Error(
+        'Database configuration missing!\n' +
+        'Please set either DATABASE_URL or (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD) environment variables.\n' +
+        'Check your deployment platform\'s environment variable settings.'
+      );
+    }
+    
     // Initialize database tables
     await createUsersTable();
     
@@ -114,6 +123,11 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
+    console.error('\n📝 Troubleshooting steps:');
+    console.error('1. Check that environment variables are set in your hosting platform');
+    console.error('2. Required: DATABASE_URL or (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD)');
+    console.error('3. Current NODE_ENV:', process.env.NODE_ENV || 'not set');
+    console.error('4. DATABASE_URL status:', process.env.DATABASE_URL ? '✓ SET' : '✗ NOT SET');
     process.exit(1);
   }
 };
