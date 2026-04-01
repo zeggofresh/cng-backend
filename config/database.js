@@ -17,9 +17,12 @@ const pool = new Pool({
   idleTimeoutMillis: 30000,
 });
 
-console.log('DB Host:', process.env.DB_HOST);
-console.log('DB Name:', process.env.DB_NAME);
-console.log('DB User:', process.env.DB_USER);
+// Debug logging (optional - can be removed in production)
+if (process.env.NODE_ENV === 'development') {
+  console.log('DB Host:', process.env.DB_HOST);
+  console.log('DB Name:', process.env.DB_NAME);
+  console.log('DB User:', process.env.DB_USER);
+}
 
 // Test database connection
 pool.on('connect', () => {
