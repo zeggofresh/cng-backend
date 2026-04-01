@@ -1,21 +1,40 @@
 const { Pool } = require('pg');
 
 // PostgreSQL connection pool for Neon
-// Using individual parameters instead of connection string
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT) || 5432,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  ssl: {
-    rejectUnauthorized: false
-  },
-  connectionTimeoutMillis: 10000, // Increased timeout
-  requestTimeout: 30000,
-  max: 20,
-  idleTimeoutMillis: 30000,
-});
+// Support both individual parameters and DATABASE_URL
+let poolConfig;
+
+if (process.env.DATABASE_URL) {
+  // Use connection string (better for production deployments)
+  poolConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    },
+    connectionTimeoutMillis: 10000,
+    requestTimeout: 30000,
+    max: 20,
+    idleTimeoutMillis: 30000,
+  };
+} else {
+  // Use individual parameters (for local development)
+  poolConfig = {
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT) || 5432,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    ssl: {
+      rejectUnauthorized: false
+    },
+    connectionTimeoutMillis: 10000,
+    requestTimeout: 30000,
+    max: 20,
+    idleTimeoutMillis: 30000,
+  };
+}
+
+const pool = new Pool(poolConfig);
 
 // Debug logging (optional - can be removed in production)
 if (process.env.NODE_ENV === 'development') {
