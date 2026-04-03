@@ -4,7 +4,12 @@ const { Pool } = require('pg');
 // Support both individual parameters and DATABASE_URL
 let poolConfig;
 
+console.log('🔍 Checking database configuration...');
+console.log('  DATABASE_URL present:', !!process.env.DATABASE_URL);
+console.log('  DB_HOST present:', !!process.env.DB_HOST);
+
 if (process.env.DATABASE_URL) {
+  console.log('✅ Using DATABASE_URL for database connection');
   // Use connection string (better for production deployments)
   poolConfig = {
     connectionString: process.env.DATABASE_URL,
@@ -16,7 +21,8 @@ if (process.env.DATABASE_URL) {
     max: 20,
     idleTimeoutMillis: 30000,
   };
-} else {
+} else if (process.env.DB_HOST) {
+  console.log('✅ Using individual DB parameters for database connection');
   // Use individual parameters (for local development)
   poolConfig = {
     host: process.env.DB_HOST,
@@ -32,6 +38,10 @@ if (process.env.DATABASE_URL) {
     max: 20,
     idleTimeoutMillis: 30000,
   };
+} else {
+  console.error('❌ CRITICAL: No database configuration found!');
+  console.error('   Please set DATABASE_URL environment variable in your hosting platform');
+  throw new Error('Database configuration missing - no DATABASE_URL or DB_HOST found');
 }
 
 const pool = new Pool(poolConfig);
@@ -85,10 +95,14 @@ const createUsersTable = async () => {
   `;
 
   try {
+    console.log('📊 Attempting to create users table...');
     await pool.query(query);
-    console.log('Users table created successfully');
+    console.log('✅ Users table created successfully');
   } catch (error) {
-    console.error('Error creating users table:', error.message);
+    console.error('❌ Error creating users table:', error.message);
+    console.error('   SQL State:', error.code);
+    console.error('   Detail:', error.detail);
+    console.error('   Hint:', error.hint);
     throw error;
   }
 };
