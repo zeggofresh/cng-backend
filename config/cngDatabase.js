@@ -2,7 +2,8 @@ const { pool } = require('../config/database');
 
 // Create CNG pumps table
 const createCngPumpsTable = async () => {
-  const query = `
+  // First create table if not exists
+  const createQuery = `
     CREATE TABLE IF NOT EXISTS cng_pumps (
       id SERIAL PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -12,17 +13,21 @@ const createCngPumpsTable = async () => {
       city VARCHAR(100),
       state VARCHAR(100),
       pincode VARCHAR(10),
-      is_open BOOLEAN DEFAULT true,
-      has_stock BOOLEAN DEFAULT true,
-      stock_level VARCHAR(20) DEFAULT 'Medium',
-      operating_hours VARCHAR(100) DEFAULT '24/7',
-      phone_number VARCHAR(20),
-      last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       is_active BOOLEAN DEFAULT true,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+  `;
 
+  // Then add new columns if they don't exist
+  const alterQuery = `
+    ALTER TABLE cng_pumps ADD COLUMN IF NOT EXISTS is_open BOOLEAN DEFAULT true;
+    ALTER TABLE cng_pumps ADD COLUMN IF NOT EXISTS has_stock BOOLEAN DEFAULT true;
+    ALTER TABLE cng_pumps ADD COLUMN IF NOT EXISTS stock_level VARCHAR(20) DEFAULT 'Medium';
+    ALTER TABLE cng_pumps ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(100) DEFAULT '24/7';
+    ALTER TABLE cng_pumps ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20);
+    ALTER TABLE cng_pumps ADD COLUMN IF NOT EXISTS last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    
     CREATE INDEX IF NOT EXISTS idx_cng_pumps_location ON cng_pumps(latitude, longitude);
     CREATE INDEX IF NOT EXISTS idx_cng_pumps_active ON cng_pumps(is_active);
     CREATE INDEX IF NOT EXISTS idx_cng_pumps_stock ON cng_pumps(has_stock);
@@ -30,8 +35,9 @@ const createCngPumpsTable = async () => {
 
   try {
     console.log('📊 Attempting to create cng_pumps table...');
-    await pool.query(query);
-    console.log('✅ cng_pumps table created successfully');
+    await pool.query(createQuery);
+    await pool.query(alterQuery);
+    console.log('✅ cng_pumps table created/updated successfully');
   } catch (error) {
     console.error('❌ Error creating cng_pumps table:', error.message);
     throw error;
