@@ -118,12 +118,12 @@ router.get('/search', [
   }
 });
 
-// @route   POST /api/cng/nearest
+// @route   GET /api/cng/nearest
 // @desc    Get nearest CNG pump with stock status and navigation
 // @access  Public (no auth required)
-router.post('/nearest', [
-  body('latitude').isFloat({ min: -90, max: 90 }).withMessage('Valid latitude required (-90 to 90)'),
-  body('longitude').isFloat({ min: -180, max: 180 }).withMessage('Valid longitude required (-180 to 180)')
+router.get('/nearest', [
+  query('latitude').isFloat({ min: -90, max: 90 }).withMessage('Valid latitude required (-90 to 90)'),
+  query('longitude').isFloat({ min: -180, max: 180 }).withMessage('Valid longitude required (-180 to 180)')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -131,11 +131,12 @@ router.post('/nearest', [
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
-        errors: errors.array().map(err => ({ field: err.path, message: err.msg }))
+        errors: errors.array().map(err => ({ field: err.field, message: err.msg }))
       });
     }
 
-    const { latitude, longitude } = req.body;
+    const latitude = parseFloat(req.query.latitude);
+    const longitude = parseFloat(req.query.longitude);
 
     // Find nearest CNG pump with stock
     const query = `
@@ -228,13 +229,13 @@ router.post('/nearest', [
   }
 });
 
-// @route   POST /api/cng/all-nearby
+// @route   GET /api/cng/all-nearby
 // @desc    Get all nearby CNG pumps sorted by distance with stock
 // @access  Public
-router.post('/all-nearby', [
-  body('latitude').isFloat({ min: -90, max: 90 }).withMessage('Valid latitude required (-90 to 90)'),
-  body('longitude').isFloat({ min: -180, max: 180 }).withMessage('Valid longitude required (-180 to 180)'),
-  body('radius_km').optional().isFloat({ min: 0.5, max: 50 }).withMessage('Radius must be 0.5-50 km')
+router.get('/all-nearby', [
+  query('latitude').isFloat({ min: -90, max: 90 }).withMessage('Valid latitude required (-90 to 90)'),
+  query('longitude').isFloat({ min: -180, max: 180 }).withMessage('Valid longitude required (-180 to 180)'),
+  query('radius_km').optional().isFloat({ min: 0.5, max: 50 }).withMessage('Radius must be 0.5-50 km')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -242,11 +243,13 @@ router.post('/all-nearby', [
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
-        errors: errors.array().map(err => ({ field: err.path, message: err.msg }))
+        errors: errors.array().map(err => ({ field: err.field, message: err.msg }))
       });
     }
 
-    const { latitude, longitude, radius_km = 10 } = req.body;
+    const latitude = parseFloat(req.query.latitude);
+    const longitude = parseFloat(req.query.longitude);
+    const radiusKm = parseFloat(req.query.radius_km) || 10;
 
     // Find all nearby pumps with stock info
     const query = `
@@ -280,7 +283,7 @@ router.post('/all-nearby', [
         distance_km ASC
     `;
 
-    const result = await pool.query(query, [latitude, longitude, radius_km]);
+    const result = await pool.query(query, [latitude, longitude, radiusKm]);
 
     const pumps = result.rows.map(pump => {
       const distanceKm = parseFloat(pump.distance_km).toFixed(2);
@@ -306,7 +309,7 @@ router.post('/all-nearby', [
 
     res.json({
       success: true,
-      message: `Found ${pumps.length} CNG pump(s) within ${radius_km} km`,
+      message: `Found ${pumps.length} CNG pump(s) within ${radiusKm} km`,
       data: {
         total_pumps: pumps.length,
         with_stock: withStock,

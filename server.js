@@ -136,12 +136,12 @@ const startServer = async () => {
       console.log('  POST /api/auth/reset-password');
       console.log('  GET  /api/auth/user');
       console.log('----------------------------------------');
-      console.log('CNG Pump Endpoints:');
+      console.log('CNG Pump Endpoints (ALL GET - No POST):');
       console.log('  GET  /api/cng/search            - Search CNG pumps by name/city/area');
-      console.log('  POST /api/cng/nearest         - Get nearest CNG pump with stock & navigation');
-      console.log('  POST /api/cng/all-nearby      - Get all nearby CNG pumps with stock');
-      console.log('  GET  /api/cng/pump/:id        - Get specific pump details');
-      console.log('  POST /api/cng/update-stock    - Update pump stock status');
+      console.log('  GET  /api/cng/nearest           - Get nearest CNG pump (lat/long in URL)');
+      console.log('  GET  /api/cng/all-nearby        - Get all nearby pumps (lat/long in URL)');
+      console.log('  GET  /api/cng/pump/:id          - Get specific pump details');
+      console.log('  POST /api/cng/update-stock      - Update pump stock status');
       console.log('========================================');
       console.log('');
     });
