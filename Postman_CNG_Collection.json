@@ -88,7 +88,28 @@
       "response": []
     },
     {
-      "name": "CNG - 4. Find Nearest CNG Pump",
+      "name": "CNG - 4. Search CNG Pumps",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/cng/search?q=IGL",
+          "host": ["{{base_url}}"],
+          "path": ["api", "cng", "search"],
+          "query": [
+            {
+              "key": "q",
+              "value": "IGL",
+              "description": "Search by name, city, area, or address"
+            }
+          ]
+        },
+        "description": "Search CNG pumps by name, city, area (e.g., IGL, Dwarka, Rohini, Delhi)"
+      },
+      "response": []
+    },
+    {
+      "name": "CNG - 5. Find Nearest CNG Pump",
       "request": {
         "method": "POST",
         "header": [
@@ -111,7 +132,7 @@
       "response": []
     },
     {
-      "name": "CNG - 5. All Nearby CNG Pumps",
+      "name": "CNG - 6. All Nearby CNG Pumps",
       "request": {
         "method": "POST",
         "header": [
@@ -134,7 +155,7 @@
       "response": []
     },
     {
-      "name": "CNG - 6. Get Pump Details",
+      "name": "CNG - 7. Get Pump Details",
       "request": {
         "method": "GET",
         "header": [],
@@ -148,7 +169,7 @@
       "response": []
     },
     {
-      "name": "CNG - 7. Update Stock Status",
+      "name": "CNG - 8. Update Stock Status",
       "request": {
         "method": "POST",
         "header": [

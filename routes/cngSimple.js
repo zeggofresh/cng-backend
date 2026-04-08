@@ -1,8 +1,122 @@
 const express = require('express');
 const router = express.Router();
-const { body, validationResult } = require('express-validator');
+const { body, query, validationResult } = require('express-validator');
 const { pool } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
+
+// @route   GET /api/cng/search
+// @desc    Search CNG pumps by name, city, area, or address
+// @access  Public
+router.get('/search', [
+  query('q').notEmpty().withMessage('Search query is required (name, city, or area)'),
+  query('radius_km').optional().isFloat({ min: 0.5, max: 50 }).withMessage('Radius must be 0.5-50 km')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array().map(err => ({ field: err.field, message: err.msg }))
+      });
+    }
+
+    const searchTerm = req.query.q;
+    const radiusKm = req.query.radius_km || 50;
+
+    // Search in name, address, city, state
+    const searchQuery = `
+      SELECT 
+        id,
+        name,
+        address,
+        city,
+        state,
+        pincode,
+        latitude,
+        longitude,
+        is_open,
+        has_stock,
+        stock_level,
+        last_updated,
+        ts_rank(
+          to_tsvector('english', name || ' ' || address || ' ' || city || ' ' || state),
+          plainto_tsquery('english', $1)
+        ) AS relevance
+      FROM cng_pumps
+      WHERE is_active = true
+      AND (
+        name ILIKE $2 OR
+        address ILIKE $2 OR
+        city ILIKE $2 OR
+        state ILIKE $2 OR
+        pincode ILIKE $2
+      )
+      ORDER BY 
+        has_stock DESC,
+        is_open DESC,
+        relevance DESC,
+        name ASC
+      LIMIT 20
+    `;
+
+    const result = await pool.query(searchQuery, [searchTerm, `%${searchTerm}%`]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No CNG pumps found matching "${searchTerm}"`
+      });
+    }
+
+    const pumps = result.rows.map(pump => {
+      const navigationUrl = `https://www.google.com/maps/dir/?api=1&destination=${pump.latitude},${pump.longitude}`;
+      
+      return {
+        id: pump.id,
+        name: pump.name,
+        address: pump.address,
+        city: pump.city,
+        state: pump.state,
+        pincode: pump.pincode,
+        is_open: pump.is_open,
+        status: pump.is_open ? '🟢 Open' : '🔴 Closed',
+        has_stock: pump.has_stock,
+        stock_level: pump.stock_level || 'Unknown',
+        stock_message: pump.has_stock ? `✅ Available (${pump.stock_level || 'Good'})` : '❌ Not Available',
+        location: {
+          latitude: parseFloat(pump.latitude),
+          longitude: parseFloat(pump.longitude)
+        },
+        navigation_url: navigationUrl,
+        maps_link: `https://www.google.com/maps?q=${pump.latitude},${pump.longitude}`
+      };
+    });
+
+    const withStock = pumps.filter(p => p.has_stock).length;
+    const openPumps = pumps.filter(p => p.is_open).length;
+
+    res.json({
+      success: true,
+      message: `Found ${pumps.length} CNG pump(s) matching "${searchTerm}"`,
+      data: {
+        search_term: searchTerm,
+        total_results: pumps.length,
+        with_stock: withStock,
+        open_now: openPumps,
+        pumps: pumps
+      }
+    });
+
+  } catch (error) {
+    console.error('Search CNG pumps error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while searching CNG pumps.',
+      error: error.message
+    });
+  }
+});
 
 // @route   POST /api/cng/nearest
 // @desc    Get nearest CNG pump with stock status and navigation

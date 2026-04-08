@@ -137,6 +137,7 @@ const startServer = async () => {
       console.log('  GET  /api/auth/user');
       console.log('----------------------------------------');
       console.log('CNG Pump Endpoints:');
+      console.log('  GET  /api/cng/search            - Search CNG pumps by name/city/area');
       console.log('  POST /api/cng/nearest         - Get nearest CNG pump with stock & navigation');
       console.log('  POST /api/cng/all-nearby      - Get all nearby CNG pumps with stock');
       console.log('  GET  /api/cng/pump/:id        - Get specific pump details');
