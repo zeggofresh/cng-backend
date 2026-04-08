@@ -4,12 +4,19 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { createUsersTable } = require('./config/database');
+const { 
+  createCngPumpsTable, 
+  createUserLocationsTable, 
+  createNotificationsTable, 
+  insertSampleCngPumps 
+} = require('./config/cngDatabase');
 
 // Import routes
 const signupRoutes = require('./routes/signup');
 const loginRoutes = require('./routes/login');
 const forgotPasswordRoutes = require('./routes/forgotPassword');
 const userProfileRoutes = require('./routes/userProfile');
+const cngSimpleRoutes = require('./routes/cngSimple');
 
 // Initialize express app
 const app = express();
@@ -54,6 +61,7 @@ app.use('/api/auth', signupRoutes);
 app.use('/api/auth', loginRoutes);
 app.use('/api/auth', forgotPasswordRoutes);
 app.use('/api/auth', userProfileRoutes);
+app.use('/api/cng', cngSimpleRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -103,7 +111,13 @@ const startServer = async () => {
     }
     
     // Initialize database tables
+    console.log('\n🗄️  Initializing database tables...');
     await createUsersTable();
+    await createCngPumpsTable();
+    await createUserLocationsTable();
+    await createNotificationsTable();
+    await insertSampleCngPumps();
+    console.log('✅ All database tables initialized\n');
     
     // Start listening
     app.listen(PORT, () => {
@@ -115,12 +129,18 @@ const startServer = async () => {
       console.log('Mode: ' + (process.env.NODE_ENV || 'development'));
       console.log('Time: ' + new Date().toLocaleString());
       console.log('----------------------------------------');
-      console.log('Endpoints:');
+      console.log('Auth Endpoints:');
       console.log('  POST /api/auth/signup');
       console.log('  POST /api/auth/login');
       console.log('  POST /api/auth/forgot-password');
       console.log('  POST /api/auth/reset-password');
       console.log('  GET  /api/auth/user');
+      console.log('----------------------------------------');
+      console.log('CNG Pump Endpoints:');
+      console.log('  POST /api/cng/nearest         - Get nearest CNG pump with stock & navigation');
+      console.log('  POST /api/cng/all-nearby      - Get all nearby CNG pumps with stock');
+      console.log('  GET  /api/cng/pump/:id        - Get specific pump details');
+      console.log('  POST /api/cng/update-stock    - Update pump stock status');
       console.log('========================================');
       console.log('');
     });

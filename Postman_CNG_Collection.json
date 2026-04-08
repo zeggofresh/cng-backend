@@ -1,0 +1,186 @@
+{
+  "info": {
+    "_postman_id": "cng-finder-complete-api",
+    "name": "CNG Finder - Complete API",
+    "description": "Auth + CNG Pump Finder with Stock & Navigation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "AUTH - 1. Signup",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Doe\",\n  \"emailOrPhone\": \"john@example.com\",\n  \"password\": \"Pass123\",\n  \"confirmPassword\": \"Pass123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "Register new user"
+      },
+      "response": []
+    },
+    {
+      "name": "AUTH - 2. Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const jsonData = pm.response.json();",
+              "    pm.environment.set('auth_token', jsonData.data.token);",
+              "    console.log('Token saved:', jsonData.data.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailOrPhone\": \"john@example.com\",\n  \"password\": \"Pass123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "login"]
+        },
+        "description": "Login - Token auto-saved"
+      },
+      "response": []
+    },
+    {
+      "name": "AUTH - 3. Get User Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/auth/user",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "user"]
+        },
+        "description": "Get user profile"
+      },
+      "response": []
+    },
+    {
+      "name": "CNG - 4. Find Nearest CNG Pump",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"latitude\": 28.7041,\n  \"longitude\": 77.1025\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cng/nearest",
+          "host": ["{{base_url}}"],
+          "path": ["api", "cng", "nearest"]
+        },
+        "description": "Find nearest CNG pump with name, distance, stock status & navigation link"
+      },
+      "response": []
+    },
+    {
+      "name": "CNG - 5. All Nearby CNG Pumps",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"latitude\": 28.7041,\n  \"longitude\": 77.1025,\n  \"radius_km\": 10\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cng/all-nearby",
+          "host": ["{{base_url}}"],
+          "path": ["api", "cng", "all-nearby"]
+        },
+        "description": "Get all CNG pumps nearby with stock status, sorted by distance"
+      },
+      "response": []
+    },
+    {
+      "name": "CNG - 6. Get Pump Details",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/cng/pump/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "cng", "pump", "1"]
+        },
+        "description": "Get full details of a specific CNG pump (change ID in URL)"
+      },
+      "response": []
+    },
+    {
+      "name": "CNG - 7. Update Stock Status",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pump_id\": 1,\n  \"has_stock\": true,\n  \"stock_level\": \"High\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cng/update-stock",
+          "host": ["{{base_url}}"],
+          "path": ["api", "cng", "update-stock"]
+        },
+        "description": "Update CNG stock availability (pump_id, has_stock, stock_level: Low/Medium/High)"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://cng-backend-production-03e7.up.railway.app",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
