@@ -312,7 +312,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:3000",
+      "value": "https://cng-backend-production-03e7.up.railway.app",
       "type": "string"
     },
     {

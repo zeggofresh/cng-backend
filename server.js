@@ -9,6 +9,7 @@ const { createUsersTable } = require('./config/database');
 const signupRoutes = require('./routes/signup');
 const loginRoutes = require('./routes/login');
 const forgotPasswordRoutes = require('./routes/forgotPassword');
+const userProfileRoutes = require('./routes/userProfile');
 
 // Initialize express app
 const app = express();
@@ -52,6 +53,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', signupRoutes);
 app.use('/api/auth', loginRoutes);
 app.use('/api/auth', forgotPasswordRoutes);
+app.use('/api/auth', userProfileRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -118,6 +120,7 @@ const startServer = async () => {
       console.log('  POST /api/auth/login');
       console.log('  POST /api/auth/forgot-password');
       console.log('  POST /api/auth/reset-password');
+      console.log('  GET  /api/auth/user');
       console.log('========================================');
       console.log('');
     });
