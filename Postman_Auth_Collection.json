@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "cng-auth-api-complete-v2",
     "name": "CNG Finder - Authentication APIs",
-    "description": "Complete Authentication API Collection - Signup, Login, Forgot Password, Reset Password, User Profile\n\n📋 API Endpoints:\n1. POST /api/auth/signup - Register new user\n2. POST /api/auth/login - Login user\n3. POST /api/auth/forgot-password - Request password reset code\n4. POST /api/auth/reset-password - Reset password with code\n5. GET /api/auth/user - Get user profile (requires auth)\n\n⚙️ Base URL: Change the variable below to your server URL\n🔐 Auto Token: Login request automatically saves JWT token",
+    "description": "Complete Authentication API Collection - Signup, Login, Forgot Password, Reset Password, User Profile\n\nAPI Endpoints:\n1. POST /api/auth/signup - Register new user\n2. POST /api/auth/login - Login user\n3. POST /api/auth/forgot-password - Request password reset code\n4. POST /api/auth/reset-password - Reset password with code\n5. GET /api/auth/user - Get user profile (requires auth)\n\nBase URL: Change the variable below to your server URL\nAuto Token: Login request automatically saves JWT token",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -21,7 +21,7 @@
   ],
   "item": [
     {
-      "name": "1️⃣ SIGNUP - Register New User",
+      "name": "1. SIGNUP - Register New User",
       "event": [
         {
           "listen": "test",
@@ -60,11 +60,11 @@
           "host": ["{{base_url}}"],
           "path": ["api", "auth", "signup"]
         },
-        "description": "📝 Register a new user account\n\n✅ REQUIRED FIELDS:\n- name: 2-100 characters\n- emailOrPhone: Valid email OR 10-15 digit phone number\n- password: Min 6 chars, must contain letter + number\n- confirmPassword: Must match password\n\n📤 SUCCESS RESPONSE (201):\n{\n  \"success\": true,\n  \"message\": \"User registered successfully. Welcome!\",\n  \"data\": {\n    \"user\": { id, name, email, phone },\n    \"token\": \"JWT_TOKEN\"\n  }\n}\n\n❌ ERROR RESPONSES:\n- 400: Validation error\n- 409: User already exists\n- 500: Server error"
+        "description": "Register a new user account\n\nREQUIRED FIELDS:\n- name: 2-100 characters\n- emailOrPhone: Valid email OR 10-15 digit phone number\n- password: Min 6 chars, must contain letter + number\n- confirmPassword: Must match password\n\nSUCCESS RESPONSE (201):\n{\n  \"success\": true,\n  \"message\": \"User registered successfully. Welcome!\",\n  \"data\": {\n    \"user\": { id, name, email, phone },\n    \"token\": \"JWT_TOKEN\"\n  }\n}\n\nERROR RESPONSES:\n- 400: Validation error\n- 409: User already exists\n- 500: Server error"
       }
     },
     {
-      "name": "2️⃣ LOGIN - User Login",
+      "name": "2. LOGIN - User Login",
       "event": [
         {
           "listen": "test",
@@ -103,11 +103,11 @@
           "host": ["{{base_url}}"],
           "path": ["api", "auth", "login"]
         },
-        "description": "🔐 Login with email/phone and password\n\n✅ REQUIRED FIELDS:\n- emailOrPhone: Registered email OR phone number\n- password: User password\n\n📤 SUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"message\": \"Login successful. Welcome back!\",\n  \"data\": {\n    \"user\": { id, name, email, phone },\n    \"token\": \"JWT_TOKEN\"\n  }\n}\n\n❌ ERROR RESPONSES:\n- 400: Validation error\n- 401: Invalid credentials\n- 500: Server error\n\n💡 Token is automatically saved after successful login!"
+        "description": "Login with email/phone and password\n\nREQUIRED FIELDS:\n- emailOrPhone: Registered email OR phone number\n- password: User password\n\nSUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"message\": \"Login successful. Welcome back!\",\n  \"data\": {\n    \"user\": { id, name, email, phone },\n    \"token\": \"JWT_TOKEN\"\n  }\n}\n\nERROR RESPONSES:\n- 400: Validation error\n- 401: Invalid credentials\n- 500: Server error\n\nToken is automatically saved after successful login!"
       }
     },
     {
-      "name": "3️⃣ GET USER PROFILE - Get Logged-in User Info",
+      "name": "3. GET USER PROFILE - Get Logged-in User Info",
       "request": {
         "method": "GET",
         "header": [
@@ -123,11 +123,11 @@
           "host": ["{{base_url}}"],
           "path": ["api", "auth", "user"]
         },
-        "description": "👤 Get current logged-in user profile information\n\n🔐 REQUIRED:\n- Authorization header with Bearer token\n- Login first to get the token (auto-saved)\n\n📤 SUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": { id, name, email, phone, created_at }\n  }\n}\n\n❌ ERROR RESPONSES:\n- 401: No token provided / Invalid token\n- 403: Token expired\n- 500: Server error"
+        "description": "Get current logged-in user profile information\n\nREQUIRED:\n- Authorization header with Bearer token\n- Login first to get the token (auto-saved)\n\nSUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"message\": \"User profile retrieved successfully.\",\n  \"data\": {\n    \"user\": { id, name, email, phone, isActive }\n  }\n}\n\nERROR RESPONSES:\n- 401: No token provided / Invalid token\n- 403: Token expired\n- 404: User not found\n- 500: Server error"
       }
     },
     {
-      "name": "4️⃣ FORGOT PASSWORD - Request Reset Code",
+      "name": "4. FORGOT PASSWORD - Request Reset Code",
       "event": [
         {
           "listen": "test",
@@ -165,11 +165,11 @@
           "host": ["{{base_url}}"],
           "path": ["api", "auth", "forgot-password"]
         },
-        "description": "📧 Request a password reset code\n\n✅ REQUIRED FIELDS:\n- emailOrPhone: Registered email OR phone number\n\n📤 SUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"message\": \"If an account exists, you will receive a reset code\",\n  \"debug_resetToken\": \"123456\"  // Only in development\n}\n\n💡 How it works:\n1. Enter your registered email/phone\n2. System generates 6-digit code\n3. Code is logged to console (in development)\n4. Use this code in Reset Password API\n\n⚠️ Note: In production, code is sent via SMS/Email"
+        "description": "Request a password reset code\n\nREQUIRED FIELDS:\n- emailOrPhone: Registered email OR phone number\n\nSUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"message\": \"If an account exists, you will receive a reset code\",\n  \"debug_resetToken\": \"123456\"  // Only in development\n}\n\nHow it works:\n1. Enter your registered email/phone\n2. System generates 6-digit code\n3. Code is logged to console (in development)\n4. Use this code in Reset Password API\n\nNote: In production, code is sent via SMS/Email"
       }
     },
     {
-      "name": "5️⃣ RESET PASSWORD - Reset with Code",
+      "name": "5. RESET PASSWORD - Reset with Code",
       "event": [
         {
           "listen": "test",
@@ -199,7 +199,7 @@
           "host": ["{{base_url}}"],
           "path": ["api", "auth", "reset-password"]
         },
-        "description": "🔑 Reset password using the code received\n\n✅ REQUIRED FIELDS:\n- token: 6-digit reset code from Forgot Password API\n- newPassword: Min 6 chars, must contain letter + number\n- confirmPassword: Must match newPassword\n\n📤 SUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"message\": \"Password reset successful. Please login with your new password.\"\n}\n\n❌ ERROR RESPONSES:\n- 400: Invalid/expired token or validation error\n- 500: Server error\n\n💡 Workflow:\n1. Call Forgot Password API first\n2. Get the 6-digit code from console/email\n3. Enter code + new password here\n4. After success, login with new password"
+        "description": "Reset password using the code received\n\nREQUIRED FIELDS:\n- token: 6-digit reset code from Forgot Password API\n- newPassword: Min 6 chars, must contain letter + number\n- confirmPassword: Must match newPassword\n\nSUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"message\": \"Password reset successful. Please login with your new password.\"\n}\n\nERROR RESPONSES:\n- 400: Invalid/expired token or validation error\n- 500: Server error\n\nWorkflow:\n1. Call Forgot Password API first\n2. Get the 6-digit code from console/email\n3. Enter code + new password here\n4. After success, login with new password"
       }
     }
   ]
