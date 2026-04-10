@@ -56,10 +56,10 @@ async function testSignup() {
   
   if (result && result.success) {
     authToken = result.data.token;
-    console.log('✅ Signup successful! Token saved.');
+    console.log('Signup successful! Token saved.');
     return true;
   } else {
-    console.log('❌ Signup failed!');
+    console.log('Signup failed!');
     return false;
   }
 }
@@ -77,10 +77,10 @@ async function testLogin() {
   
   if (result && result.success) {
     authToken = result.data.token;
-    console.log('✅ Login successful! Token updated.');
+    console.log('Login successful! Token updated.');
     return true;
   } else {
-    console.log('❌ Login failed!');
+    console.log('Login failed!');
     return false;
   }
 }

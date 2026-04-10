@@ -34,12 +34,12 @@ const createCngPumpsTable = async () => {
   `;
 
   try {
-    console.log('📊 Attempting to create cng_pumps table...');
+    console.log('Attempting to create cng_pumps table...');
     await pool.query(createQuery);
     await pool.query(alterQuery);
-    console.log('✅ cng_pumps table created/updated successfully');
+    console.log('cng_pumps table created/updated successfully');
   } catch (error) {
-    console.error('❌ Error creating cng_pumps table:', error.message);
+    console.error('Error creating cng_pumps table:', error.message);
     throw error;
   }
 };
@@ -63,11 +63,11 @@ const createUserLocationsTable = async () => {
   `;
 
   try {
-    console.log('📊 Attempting to create user_locations table...');
+    console.log('Attempting to create user_locations table...');
     await pool.query(query);
-    console.log('✅ user_locations table created successfully');
+    console.log('user_locations table created successfully');
   } catch (error) {
-    console.error('❌ Error creating user_locations table:', error.message);
+    console.error('Error creating user_locations table:', error.message);
     throw error;
   }
 };
@@ -91,11 +91,11 @@ const createNotificationsTable = async () => {
   `;
 
   try {
-    console.log('📊 Attempting to create notifications table...');
+    console.log('Attempting to create notifications table...');
     await pool.query(query);
-    console.log('✅ notifications table created successfully');
+    console.log('notifications table created successfully');
   } catch (error) {
-    console.error('❌ Error creating notifications table:', error.message);
+    console.error('Error creating notifications table:', error.message);
     throw error;
   }
 };
@@ -106,7 +106,7 @@ const insertSampleCngPumps = async () => {
   const checkResult = await pool.query(checkQuery);
   
   if (parseInt(checkResult.rows[0].count) > 0) {
-    console.log('ℹ️  CNG pumps already exist, skipping sample data');
+    console.log('CNG pumps already exist, skipping sample data');
     return;
   }
 
@@ -127,13 +127,13 @@ const insertSampleCngPumps = async () => {
   `;
 
   try {
-    console.log('📊 Inserting sample CNG pump data...');
+    console.log('Inserting sample CNG pump data...');
     for (const pump of samplePumps) {
       await pool.query(insertQuery, pump);
     }
-    console.log(`✅ Inserted ${samplePumps.length} sample CNG pumps`);
+    console.log(`Inserted ${samplePumps.length} sample CNG pumps`);
   } catch (error) {
-    console.error('❌ Error inserting sample CNG pumps:', error.message);
+    console.error('Error inserting sample CNG pumps:', error.message);
     throw error;
   }
 };

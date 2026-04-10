@@ -80,10 +80,10 @@ router.get('/search', [
         state: pump.state,
         pincode: pump.pincode,
         is_open: pump.is_open,
-        status: pump.is_open ? '🟢 Open' : '🔴 Closed',
+        status: pump.is_open ? 'Open' : 'Closed',
         has_stock: pump.has_stock,
         stock_level: pump.stock_level || 'Unknown',
-        stock_message: pump.has_stock ? `✅ Available (${pump.stock_level || 'Good'})` : '❌ Not Available',
+        stock_message: pump.has_stock ? `Available (${pump.stock_level || 'Good'})` : 'Not Available',
         location: {
           latitude: parseFloat(pump.latitude),
           longitude: parseFloat(pump.longitude)
@@ -187,7 +187,7 @@ router.get('/nearest', [
       stockMessage = '❌ CNG Stock Not Available';
     }
 
-    const statusMessage = pump.is_open ? '🟢 Open' : '🔴 Closed';
+    const statusMessage = pump.is_open ? 'Open' : 'Closed';
 
     res.json({
       success: true,
@@ -295,10 +295,10 @@ router.get('/all-nearby', [
         address: pump.address,
         distance_km: distanceKm,
         is_open: pump.is_open,
-        status: pump.is_open ? '🟢 Open' : '🔴 Closed',
+        status: pump.is_open ? 'Open' : 'Closed',
         has_stock: pump.has_stock,
         stock_level: pump.stock_level || 'Unknown',
-        stock_message: pump.has_stock ? `✅ Available (${pump.stock_level || 'Good'})` : '❌ Not Available',
+        stock_message: pump.has_stock ? `Available (${pump.stock_level || 'Good'})` : 'Not Available',
         navigation_url: navigationUrl,
         estimated_time: `${(distanceKm * 3).toFixed(0)} mins`
       };
@@ -380,7 +380,7 @@ router.get('/pump/:id', async (req, res) => {
           state: pump.state,
           pincode: pump.pincode,
           is_open: pump.is_open,
-          status: pump.is_open ? '🟢 Open' : '🔴 Closed',
+          status: pump.is_open ? 'Open' : 'Closed',
           stock: {
             available: pump.has_stock,
             level: pump.stock_level || 'Unknown',

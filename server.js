@@ -117,7 +117,7 @@ const startServer = async () => {
     await createUserLocationsTable();
     await createNotificationsTable();
     await insertSampleCngPumps();
-    console.log('✅ All database tables initialized\n');
+    console.log('All database tables initialized\n');
     
     // Start listening
     app.listen(PORT, () => {
@@ -146,7 +146,7 @@ const startServer = async () => {
       console.log('');
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error.message);
+    console.error('Failed to start server:', error.message);
     console.error('\n📝 Troubleshooting steps:');
     console.error('1. Check that environment variables are set in your hosting platform');
     console.error('2. Required: DATABASE_URL or (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD)');
