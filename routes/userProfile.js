@@ -8,6 +8,14 @@ const { authenticateToken } = require('../middleware/auth');
 router.get('/user', authenticateToken, async (req, res) => {
   try {
     // User is already attached to req by authenticateToken middleware
+    // Check if user exists
+    if (!req.user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.'
+      });
+    }
+
     res.json({
       success: true,
       message: 'User profile retrieved successfully.',
@@ -17,8 +25,7 @@ router.get('/user', authenticateToken, async (req, res) => {
           name: req.user.name,
           email: req.user.email,
           phone: req.user.phone,
-          isActive: req.user.is_active,
-          createdAt: req.user.created_at
+          isActive: req.user.is_active
         }
       }
     });
