@@ -1,0 +1,206 @@
+{
+  "info": {
+    "_postman_id": "cng-auth-api-complete-v2",
+    "name": "CNG Finder - Authentication APIs",
+    "description": "Complete Authentication API Collection - Signup, Login, Forgot Password, Reset Password, User Profile\n\n📋 API Endpoints:\n1. POST /api/auth/signup - Register new user\n2. POST /api/auth/login - Login user\n3. POST /api/auth/forgot-password - Request password reset code\n4. POST /api/auth/reset-password - Reset password with code\n5. GET /api/auth/user - Get user profile (requires auth)\n\n⚙️ Base URL: Change the variable below to your server URL\n🔐 Auto Token: Login request automatically saves JWT token",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://cng-backend-production-03e7.up.railway.app",
+      "type": "string",
+      "description": "Production API Base URL"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT authentication token (automatically saved after successful login)"
+    }
+  ],
+  "item": [
+    {
+      "name": "1️⃣ SIGNUP - Register New User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Auto-save token if signup is successful",
+              "if (pm.response.code === 201) {",
+              "    const jsonData = pm.response.json();",
+              "    if (jsonData.data && jsonData.data.token) {",
+              "        pm.environment.set('auth_token', jsonData.data.token);",
+              "        console.log('✅ Signup successful! Token saved:', jsonData.data.token);",
+              "    }",
+              "}",
+              "",
+              "// Log response for debugging",
+              "console.log('Response:', pm.response.text());"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Rahul Sharma\",\n  \"emailOrPhone\": \"rahul@example.com\",\n  \"password\": \"Pass123\",\n  \"confirmPassword\": \"Pass123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        },
+        "description": "📝 Register a new user account\n\n✅ REQUIRED FIELDS:\n- name: 2-100 characters\n- emailOrPhone: Valid email OR 10-15 digit phone number\n- password: Min 6 chars, must contain letter + number\n- confirmPassword: Must match password\n\n📤 SUCCESS RESPONSE (201):\n{\n  \"success\": true,\n  \"message\": \"User registered successfully. Welcome!\",\n  \"data\": {\n    \"user\": { id, name, email, phone },\n    \"token\": \"JWT_TOKEN\"\n  }\n}\n\n❌ ERROR RESPONSES:\n- 400: Validation error\n- 409: User already exists\n- 500: Server error"
+      }
+    },
+    {
+      "name": "2️⃣ LOGIN - User Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Auto-save token if login is successful",
+              "if (pm.response.code === 200) {",
+              "    const jsonData = pm.response.json();",
+              "    if (jsonData.data && jsonData.data.token) {",
+              "        pm.environment.set('auth_token', jsonData.data.token);",
+              "        console.log('✅ Login successful! Token saved:', jsonData.data.token);",
+              "    }",
+              "}",
+              "",
+              "// Log response for debugging",
+              "console.log('Response:', pm.response.text());"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailOrPhone\": \"rahul@example.com\",\n  \"password\": \"Pass123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "login"]
+        },
+        "description": "🔐 Login with email/phone and password\n\n✅ REQUIRED FIELDS:\n- emailOrPhone: Registered email OR phone number\n- password: User password\n\n📤 SUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"message\": \"Login successful. Welcome back!\",\n  \"data\": {\n    \"user\": { id, name, email, phone },\n    \"token\": \"JWT_TOKEN\"\n  }\n}\n\n❌ ERROR RESPONSES:\n- 400: Validation error\n- 401: Invalid credentials\n- 500: Server error\n\n💡 Token is automatically saved after successful login!"
+      }
+    },
+    {
+      "name": "3️⃣ GET USER PROFILE - Get Logged-in User Info",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text",
+            "description": "JWT token from login (auto-filled)"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/auth/user",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "user"]
+        },
+        "description": "👤 Get current logged-in user profile information\n\n🔐 REQUIRED:\n- Authorization header with Bearer token\n- Login first to get the token (auto-saved)\n\n📤 SUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": { id, name, email, phone, created_at }\n  }\n}\n\n❌ ERROR RESPONSES:\n- 401: No token provided / Invalid token\n- 403: Token expired\n- 500: Server error"
+      }
+    },
+    {
+      "name": "4️⃣ FORGOT PASSWORD - Request Reset Code",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Log the reset token for testing (only in development)",
+              "if (pm.response.code === 200) {",
+              "    const jsonData = pm.response.json();",
+              "    if (jsonData.debug_resetToken) {",
+              "        console.log('🔑 Reset Code (for testing):', jsonData.debug_resetToken);",
+              "    }",
+              "}",
+              "",
+              "// Log response for debugging",
+              "console.log('Response:', pm.response.text());"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailOrPhone\": \"rahul@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/forgot-password",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "forgot-password"]
+        },
+        "description": "📧 Request a password reset code\n\n✅ REQUIRED FIELDS:\n- emailOrPhone: Registered email OR phone number\n\n📤 SUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"message\": \"If an account exists, you will receive a reset code\",\n  \"debug_resetToken\": \"123456\"  // Only in development\n}\n\n💡 How it works:\n1. Enter your registered email/phone\n2. System generates 6-digit code\n3. Code is logged to console (in development)\n4. Use this code in Reset Password API\n\n⚠️ Note: In production, code is sent via SMS/Email"
+      }
+    },
+    {
+      "name": "5️⃣ RESET PASSWORD - Reset with Code",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Log response for debugging",
+              "console.log('Response:', pm.response.text());"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"123456\",\n  \"newPassword\": \"NewPass123\",\n  \"confirmPassword\": \"NewPass123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/reset-password",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "reset-password"]
+        },
+        "description": "🔑 Reset password using the code received\n\n✅ REQUIRED FIELDS:\n- token: 6-digit reset code from Forgot Password API\n- newPassword: Min 6 chars, must contain letter + number\n- confirmPassword: Must match newPassword\n\n📤 SUCCESS RESPONSE (200):\n{\n  \"success\": true,\n  \"message\": \"Password reset successful. Please login with your new password.\"\n}\n\n❌ ERROR RESPONSES:\n- 400: Invalid/expired token or validation error\n- 500: Server error\n\n💡 Workflow:\n1. Call Forgot Password API first\n2. Get the 6-digit code from console/email\n3. Enter code + new password here\n4. After success, login with new password"
+      }
+    }
+  ]
+}
