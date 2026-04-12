@@ -8,6 +8,7 @@ const {
   createCngPumpsTable, 
   createUserLocationsTable, 
   createNotificationsTable, 
+  createNotificationDevicesTable,
   insertSampleCngPumps 
 } = require('./config/cngDatabase');
 
@@ -17,6 +18,8 @@ const loginRoutes = require('./routes/login');
 const forgotPasswordRoutes = require('./routes/forgotPassword');
 const userProfileRoutes = require('./routes/userProfile');
 const cngSimpleRoutes = require('./routes/cngSimple');
+const cngMapsRoutes = require('./routes/cngMaps');
+const cngNotificationsRoutes = require('./routes/cngNotifications');
 
 // Initialize express app
 const app = express();
@@ -62,6 +65,8 @@ app.use('/api/auth', loginRoutes);
 app.use('/api/auth', forgotPasswordRoutes);
 app.use('/api/auth', userProfileRoutes);
 app.use('/api/cng', cngSimpleRoutes);
+app.use('/api/cng/maps', cngMapsRoutes);
+app.use('/api/cng/notifications', cngNotificationsRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -116,6 +121,7 @@ const startServer = async () => {
     await createCngPumpsTable();
     await createUserLocationsTable();
     await createNotificationsTable();
+    await createNotificationDevicesTable();
     await insertSampleCngPumps();
     console.log('All database tables initialized\n');
     
@@ -136,12 +142,21 @@ const startServer = async () => {
       console.log('  POST /api/auth/reset-password');
       console.log('  GET  /api/auth/user');
       console.log('----------------------------------------');
-      console.log('CNG Pump Endpoints (ALL GET - No POST):');
+      console.log('CNG Pump Endpoints (Database):');
       console.log('  GET  /api/cng/search            - Search CNG pumps by name/city/area');
       console.log('  GET  /api/cng/nearest           - Get nearest CNG pump (lat/long in URL)');
       console.log('  GET  /api/cng/all-nearby        - Get all nearby pumps (lat/long in URL)');
       console.log('  GET  /api/cng/pump/:id          - Get specific pump details');
       console.log('  POST /api/cng/update-stock      - Update pump stock status');
+      console.log('----------------------------------------');
+      console.log('Google Maps CNG Endpoints (Real-time):');
+      console.log('  GET  /api/cng/maps/nearby       - Find nearby CNG pumps using Google Maps');
+      console.log('  GET  /api/cng/maps/details      - Get specific pump details from Google');
+      console.log('----------------------------------------');
+      console.log('CNG Notification Endpoints:');
+      console.log('  POST /api/cng/notifications/register     - Register device for notifications');
+      console.log('  POST /api/cng/notifications/update-location - Update location & get notifications');
+      console.log('  GET  /api/cng/notifications/history      - Get notification history');
       console.log('========================================');
       console.log('');
     });

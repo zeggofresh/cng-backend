@@ -100,6 +100,36 @@ const createNotificationsTable = async () => {
   }
 };
 
+// Create notification devices table
+const createNotificationDevicesTable = async () => {
+  const query = `
+    CREATE TABLE IF NOT EXISTS notification_devices (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      device_token VARCHAR(500) NOT NULL UNIQUE,
+      device_type VARCHAR(20) NOT NULL CHECK (device_type IN ('android', 'ios')),
+      notification_radius DECIMAL(5, 2) DEFAULT 5.0,
+      is_active BOOLEAN DEFAULT true,
+      last_notification_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_notification_devices_token ON notification_devices(device_token);
+    CREATE INDEX IF NOT EXISTS idx_notification_devices_user ON notification_devices(user_id);
+    CREATE INDEX IF NOT EXISTS idx_notification_devices_active ON notification_devices(is_active);
+  `;
+
+  try {
+    console.log('Attempting to create notification_devices table...');
+    await pool.query(query);
+    console.log('notification_devices table created successfully');
+  } catch (error) {
+    console.error('Error creating notification_devices table:', error.message);
+    throw error;
+  }
+};
+
 // Insert sample CNG pump data
 const insertSampleCngPumps = async () => {
   const checkQuery = 'SELECT COUNT(*) FROM cng_pumps';
@@ -142,5 +172,6 @@ module.exports = {
   createCngPumpsTable,
   createUserLocationsTable,
   createNotificationsTable,
+  createNotificationDevicesTable,
   insertSampleCngPumps,
 };
