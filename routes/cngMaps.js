@@ -25,7 +25,7 @@ router.get('/nearby', [
     const longitude = parseFloat(req.query.longitude);
     const radius = parseInt(req.query.radius) || 10000; // Default 10km in meters
 
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.TOMTOM_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({
@@ -144,7 +144,7 @@ router.get('/details', [
     }
 
     const placeId = req.query.place_id;
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.TOMTOM_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({
