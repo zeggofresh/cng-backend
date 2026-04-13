@@ -154,9 +154,7 @@ const startServer = async () => {
       console.log('  GET  /api/cng/maps/details      - Get specific pump details from Google');
       console.log('----------------------------------------');
       console.log('CNG Notification Endpoints:');
-      console.log('  POST /api/cng/notifications/register     - Register device for notifications');
-      console.log('  POST /api/cng/notifications/update-location - Update location & get notifications');
-      console.log('  GET  /api/cng/notifications/history      - Get notification history');
+      console.log('  GET  /api/cng/notifications/check  - Check for nearby CNG pumps (Auto notification)');
       console.log('========================================');
       console.log('');
     });
