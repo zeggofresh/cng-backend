@@ -25,38 +25,29 @@ router.get('/check', [
     const { latitude, longitude, radius = 5 } = req.query;
     const radiusMeters = radius * 1000;
 
-    // Search for nearby CNG pumps using Google Maps API
+    // Search for nearby CNG pumps using TomTom Search API
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({
         success: false,
-        message: 'Google Maps API key not configured'
+        message: 'TomTom API key not configured'
       });
     }
 
-    const placesUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json`;
-    const placesResponse = await axios.get(placesUrl, {
+    const searchUrl = `https://api.tomtom.com/search/2/nearbySearch/.json`;
+    const searchResponse = await axios.get(searchUrl, {
       params: {
-        location: `${latitude},${longitude}`,
+        lat: latitude,
+        lon: longitude,
         radius: radiusMeters,
-        keyword: 'CNG pump station',
-        type: 'gas_station',
-        key: apiKey
+        query: 'CNG gas station',
+        key: apiKey,
+        limit: 20
       }
     });
 
-    if (placesResponse.data.status !== 'OK' && placesResponse.data.status !== 'ZERO_RESULTS') {
-      return res.status(500).json({
-        success: false,
-        message: 'Error fetching data from Google Maps',
-        error: placesResponse.data.status
-      });
-    }
-
-    const places = placesResponse.data.results || [];
-
-    if (places.length === 0) {
+    if (!searchResponse.data.results || searchResponse.data.results.length === 0) {
       return res.json({
         success: true,
         message: 'No CNG pumps found in this area',
@@ -68,45 +59,30 @@ router.get('/check', [
       });
     }
 
-    // Get details for each pump and filter for open ones
+    const results = searchResponse.data.results;
+
+    // Filter for open/available pumps
     const availablePumps = [];
     
-    for (const place of places.slice(0, 10)) { // Check first 10 pumps
-      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json`;
-      const detailsResponse = await axios.get(detailsUrl, {
-        params: {
-          place_id: place.place_id,
-          fields: 'name,opening_hours,formatted_phone_number,formatted_address,geometry,user_rating',
-          key: apiKey
-        }
-      });
+    for (const result of results.slice(0, 10)) { // Check first 10 pumps
+      const isOpen = result.openingHours?.isOpen ?? true; // Assume open if no data
 
-      if (detailsResponse.data.status === 'OK') {
-        const details = detailsResponse.data.result;
-        const isOpen = details.opening_hours?.open_now;
+      if (isOpen) {
+        const location = result.position;
+        const distance = (result.dist / 1000).toFixed(2); // Convert to km
 
-        if (isOpen) {
-          const location = place.geometry.location;
-          const distance = calculateDistance(
-            latitude,
-            longitude,
-            location.lat,
-            location.lng
-          );
-
-          availablePumps.push({
-            place_id: place.place_id,
-            name: details.name || place.name,
-            address: details.formatted_address || place.vicinity,
-            phone: details.formatted_phone_number || 'Not available',
-            latitude: location.lat,
-            longitude: location.lng,
-            distance_km: distance.toFixed(2),
-            rating: details.user_rating || null,
-            is_open: true,
-            navigation_url: `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`
-          });
-        }
+        availablePumps.push({
+          place_id: result.id || `${location.lat}-${location.lon}`,
+          name: result.poi?.name || 'CNG Station',
+          address: result.address?.freeformAddress || 'Address not available',
+          phone: result.poi?.phone || 'Not available',
+          latitude: location.lat,
+          longitude: location.lon,
+          distance_km: distance,
+          rating: null,
+          is_open: true,
+          navigation_url: `https://www.tomtom.com/en_gb/maps/route-planner/?to=${location.lat},${location.lon}`
+        });
       }
     }
 
@@ -153,7 +129,7 @@ router.get('/check', [
     }
 
   } catch (error) {
-    console.error('Check CNG notifications error:', error.message);
+    console.error('Check CNG notifications error (TomTom):', error.message);
     res.status(500).json({
       success: false,
       message: 'Server error while checking for CNG pumps',
