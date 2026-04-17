@@ -273,7 +273,7 @@ router.get('/all-nearby', [
         )) AS distance_km
       FROM cng_pumps
       WHERE is_active = true
-      HAVING (6371 * acos(
+      AND (6371 * acos(
         cos(radians($1)) * cos(radians(latitude)) * 
         cos(radians(longitude) - radians($2)) + 
         sin(radians($1)) * sin(radians(latitude))
