@@ -107,7 +107,66 @@ const createUsersTable = async () => {
   }
 };
 
+// Create cng_pumps table if not exists
+const createCngPumpsTable = async () => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Check if users table exists first
+    const usersTableCheck = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'users'
+      );
+    `);
+    
+    if (!usersTableCheck.rows[0].exists) {
+      console.log('Users table does not exist yet, skipping cng_pumps table creation');
+      await client.query('ROLLBACK');
+      return;
+    }
+    
+    const query = `
+      CREATE TABLE IF NOT EXISTS cng_pumps (
+        id SERIAL PRIMARY KEY,
+        owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(255) NOT NULL,
+        lat DECIMAL(10, 8) NOT NULL,
+        lng DECIMAL(11, 8) NOT NULL,
+        price DECIMAL(10, 2) NOT NULL DEFAULT 0,
+        stock VARCHAR(50) NOT NULL DEFAULT 'Available',
+        pressure INTEGER NOT NULL DEFAULT 200,
+        crowd VARCHAR(50) NOT NULL DEFAULT 'Low',
+        phone VARCHAR(20),
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE INDEX IF NOT EXISTS idx_cng_pumps_owner ON cng_pumps(owner_id);
+      CREATE INDEX IF NOT EXISTS idx_cng_pumps_location ON cng_pumps(lat, lng);
+      CREATE INDEX IF NOT EXISTS idx_cng_pumps_stock ON cng_pumps(stock);
+    `;
+
+    console.log('Attempting to create cng_pumps table...');
+    await client.query(query);
+    await client.query('COMMIT');
+    console.log('CNG pumps table created successfully');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error creating cng_pumps table:', error.message);
+    console.error('   SQL State:', error.code);
+    console.error('   Detail:', error.detail);
+    console.error('   Hint:', error.hint);
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   pool,
   createUsersTable,
+  createCngPumpsTable,
 };

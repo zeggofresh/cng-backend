@@ -3,22 +3,17 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const { createUsersTable } = require('./config/database');
-const { 
-  createCngPumpsTable, 
-  createUserLocationsTable, 
-  createNotificationsTable, 
-  createNotificationDevicesTable,
-  insertSampleCngPumps 
-} = require('./config/cngDatabase');
+const { createUsersTable, createCngPumpsTable } = require('./config/database');
 
 // Import routes
 const signupRoutes = require('./routes/signup');
 const loginRoutes = require('./routes/login');
 const forgotPasswordRoutes = require('./routes/forgotPassword');
 const userProfileRoutes = require('./routes/userProfile');
-const stationsRoutes = require('./routes/stations');
-const cngNotificationsRoutes = require('./routes/cngNotifications');
+const pumpOwnerRoutes = require('./routes/pumpOwner');
+const pumpSearchRoutes = require('./routes/pumpSearch');
+console.log('📦 pumpSearchRoutes type:', typeof pumpSearchRoutes);
+console.log('📦 pumpSearchRoutes:', pumpSearchRoutes);
 
 // Initialize express app
 const app = express();
@@ -63,8 +58,8 @@ app.use('/api/auth', signupRoutes);
 app.use('/api/auth', loginRoutes);
 app.use('/api/auth', forgotPasswordRoutes);
 app.use('/api/auth', userProfileRoutes);
-app.use('/api/stations', stationsRoutes);
-app.use('/api/notifications', cngNotificationsRoutes);
+app.use('/api/search', pumpSearchRoutes); // User-facing search endpoints
+app.use('/api/pump', pumpOwnerRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -117,10 +112,6 @@ const startServer = async () => {
     console.log('\n🗄️  Initializing database tables...');
     await createUsersTable();
     await createCngPumpsTable();
-    await createUserLocationsTable();
-    await createNotificationsTable();
-    await createNotificationDevicesTable();
-    await insertSampleCngPumps();
     console.log('All database tables initialized\n');
     
     // Start listening
@@ -140,16 +131,16 @@ const startServer = async () => {
       console.log('  POST /api/auth/reset-password');
       console.log('  GET  /api/auth/user');
       console.log('----------------------------------------');
-      console.log('Station Endpoints:');
-      console.log('  GET  /api/stations/search            - Search stations by name/district/city');
-      console.log('  GET  /api/stations/nearest           - Get nearest station (lat/long in URL)');
-      console.log('  GET  /api/stations/all-nearby        - Get all nearby stations (lat/long in URL)');
-      console.log('  GET  /api/stations/:id               - Get specific station details');
-      console.log('  POST /api/stations/update-availability - Update station availability');
-      console.log('  POST /api/stations/update-price      - Update station price');
+      console.log('Pump Owner Endpoints:');
+      console.log('  POST /api/pump/register');
+      console.log('  GET  /api/pump/:id');
+      console.log('  PUT  /api/pump/:id');
+      console.log('  PATCH /api/pump/:id/status');
+      console.log('  GET  /api/pump/owner/my-pumps');
       console.log('----------------------------------------');
-      console.log('Notification Endpoints:');
-      console.log('  GET  /api/notifications/check        - Check for nearby available stations');
+      console.log('Pump Search Endpoints (User App):');
+      console.log('  GET  /api/search/nearby?lat=X&lng=Y&radius=10');
+      console.log('  GET  /api/search/list');
       console.log('========================================');
       console.log('');
     });
