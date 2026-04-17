@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { query, validationResult } = require('express-validator');
-const axios = require('axios');
 const { pool } = require('../config/database');
 
-// @route   GET /api/cng/notifications/check
-// @desc    Check for nearby CNG pumps (Call this from Flutter while traveling)
+// @route   GET /api/notifications/check
+// @desc    Check for nearby stations (Call this from Flutter while traveling)
 // @access  Public
 router.get('/check', [
   query('latitude').isFloat({ min: -90, max: 90 }).withMessage('Valid latitude required'),
@@ -23,118 +22,116 @@ router.get('/check', [
     }
 
     const { latitude, longitude, radius = 5 } = req.query;
-    const radiusMeters = radius * 1000;
 
-    // Search for nearby CNG pumps using TomTom Search API
-    const apiKey = process.env.TOMTOM_API_KEY;
+    // Find nearby stations from database that are available
+    const query = `
+      SELECT * FROM (
+        SELECT 
+          id,
+          name,
+          address,
+          district,
+          city,
+          latitude,
+          longitude,
+          price,
+          is_open,
+          available,
+          phone_number,
+          (6371 * acos(
+            cos(radians($1)) * cos(radians(latitude)) * 
+            cos(radians(longitude) - radians($2)) + 
+            sin(radians($1)) * sin(radians(latitude))
+          )) AS distance_km
+        FROM stations
+        WHERE is_active = true
+        AND available = true
+        AND is_open = true
+      ) AS subquery
+      WHERE distance_km <= $3
+      ORDER BY distance_km ASC
+      LIMIT 10
+    `;
 
-    if (!apiKey) {
-      return res.status(500).json({
-        success: false,
-        message: 'TomTom API key not configured'
-      });
-    }
+    const result = await pool.query(query, [latitude, longitude, radius]);
 
-    
-
-    const searchUrl = `https://api.tomtom.com/search/2/nearbySearch/.json`;
-    const searchResponse = await axios.get(searchUrl, {
-      params: {
-        lat: latitude,
-        lon: longitude,
-        radius: radiusMeters,
-        query: 'CNG gas station',
-        key: apiKey,
-        limit: 20
-      }
-    });
-
-    if (!searchResponse.data.results || searchResponse.data.results.length === 0) {
+    if (result.rows.length === 0) {
       return res.json({
         success: true,
-        message: 'No CNG pumps found in this area',
+        message: 'No available stations found in this area',
         data: {
           notification: null,
-          nearby_pumps: 0,
+          nearby_stations: 0,
           searched_radius_km: radius
         }
       });
     }
 
-    const results = searchResponse.data.results;
-
-    // Filter for open/available pumps
-    const availablePumps = [];
-    
-    for (const result of results.slice(0, 10)) { // Check first 10 pumps
-      const isOpen = result.openingHours?.isOpen ?? true; // Assume open if no data
-
-      if (isOpen) {
-        const location = result.position;
-        const distance = (result.dist / 1000).toFixed(2); // Convert to km
-
-        availablePumps.push({
-          place_id: result.id || `${location.lat}-${location.lon}`,
-          name: result.poi?.name || 'CNG Station',
-          address: result.address?.freeformAddress || 'Address not available',
-          phone: result.poi?.phone || 'Not available',
-          latitude: location.lat,
-          longitude: location.lon,
-          distance_km: distance,
-          rating: null,
-          is_open: true,
-          navigation_url: `https://www.tomtom.com/en_gb/maps/route-planner/?to=${location.lat},${location.lon}`
-        });
-      }
-    }
-
-    // Sort by distance
-    availablePumps.sort((a, b) => parseFloat(a.distance_km) - parseFloat(b.distance_km));
+    const availableStations = result.rows.map(station => {
+      const distance = parseFloat(station.distance_km).toFixed(2);
+      const navigationUrl = `https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`;
+      
+      return {
+        id: station.id,
+        name: station.name,
+        address: station.address,
+        district: station.district,
+        city: station.city,
+        price: parseFloat(station.price) || 0,
+        phone: station.phone_number || 'Not available',
+        latitude: parseFloat(station.latitude),
+        longitude: parseFloat(station.longitude),
+        distance_km: distance,
+        is_open: station.is_open,
+        available: station.available,
+        navigation_url: navigationUrl
+      };
+    });
 
     // Prepare response
-    if (availablePumps.length > 0) {
-      const nearestPump = availablePumps[0];
+    if (availableStations.length > 0) {
+      const nearestStation = availableStations[0];
 
       res.json({
         success: true,
-        message: `Found ${availablePumps.length} CNG pump(s) with stock available!`,
+        message: `Found ${availableStations.length} station(s) available!`,
         data: {
           notification: {
             should_notify: true,
-            title: 'CNG Pump Nearby!',
-            body: `${nearestPump.name} is ${nearestPump.distance_km} km away - CNG Available!`,
+            title: 'Station Nearby!',
+            body: `${nearestStation.name} is ${nearestStation.distance_km} km away - Available!`,
             sound: true,
             vibration: true
           },
-          nearest_pump: nearestPump,
-          total_available: availablePumps.length,
-          all_pumps: availablePumps,
+          nearest_station: nearestStation,
+          total_available: availableStations.length,
+          all_stations: availableStations,
           searched_radius_km: radius
         }
       });
     } else {
       res.json({
         success: true,
-        message: 'No CNG pumps with available stock found nearby',
+        message: 'No available stations found nearby',
         data: {
           notification: {
             should_notify: false,
             title: null,
             body: null
           },
-          nearest_pump: null,
+          nearest_station: null,
           total_available: 0,
-          all_pumps: [],
+          all_stations: [],
           searched_radius_km: radius
         }
       });
     }
 
   } catch (error) {
-    console.error('Check CNG notifications error (TomTom):', error.message);
+    console.error('Check notifications error:', error.message);
     res.status(500).json({
       success: false,
-      message: 'Server error while checking for CNG pumps',
+      message: 'Server error while checking for stations',
       error: error.message
     });
   }
